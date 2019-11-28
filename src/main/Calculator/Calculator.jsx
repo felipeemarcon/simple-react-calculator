@@ -28,11 +28,49 @@ export default class Calculator extends Component {
   }
 
   setOperation(operation) {
-    console.log(operation);
+    if (this.state.current === 0) {
+      this.setState({ operation, current: 1, clearDisplay: true });
+    } else {
+      const equals = operation === "=";
+      const currentOperation = this.state.operation;
+
+      const values = [...this.state.values];
+
+      try {
+        switch (currentOperation) {
+          case "+":
+            values[0] = values[0] + values[1];
+            break;
+          case "-":
+            values[0] = values[0] - values[1];
+            break;
+          case "/":
+            values[0] = values[0] / values[1];
+            break;
+          case "*":
+            values[0] = values[0] * values[1];
+            break;
+          default:
+            break;
+        }
+      } catch (error) {
+        values[0] = this.state.values[0];
+      }
+
+      values[1] = 0;
+
+      this.setState({
+        displayValue: values[0],
+        operation: equals ? null : operation,
+        current: equals ? 0 : 1,
+        clearDisplay: !equals,
+        values
+      });
+    }
   }
 
-  addDigit(n) {
-    if (n === "." && this.state.displayValue.includes(".")) {
+  addDigit(digit) {
+    if (Number.isInteger(digit) && this.state.displayValue.includes(".")) {
       return;
     }
 
@@ -40,11 +78,14 @@ export default class Calculator extends Component {
       this.state.displayValue === "0" || this.state.clearDisplay;
 
     const currentValue = clearDisplay ? "" : this.state.displayValue;
-    const displayValue = currentValue + n;
+    const displayValue = currentValue + digit;
 
-    this.setState({ displayValue, clearDisplay: false });
+    this.setState({
+      displayValue,
+      clearDisplay: false
+    });
 
-    if (n !== ".") {
+    if (digit !== ".") {
       const valueIndex = this.state.current;
       const newValue = parseFloat(displayValue);
       const values = [...this.state.values];
